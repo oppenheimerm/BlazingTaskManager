@@ -1,0 +1,18 @@
+﻿@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+@theme {
+    --breakpoint-3xl: 1920px;
+    --color-primary: #1368EC;
+}
+@layer base {
+    html {
+        font-family: 'Libre Franklin', sans-serif;
+    }
+    body {
+        background-color: #FCFBFC;
+        overflow-x: hidden;
+    }
+}
