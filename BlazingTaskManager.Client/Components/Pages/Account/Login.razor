@@ -1,0 +1,31 @@
+﻿@page "/account/login"
+
+@inject NavigationManager NavigationManager
+@inject IAccountLoginVM ViewModel
+
+<PageTitle>BlazingTaskManager - Login</PageTitle>
+
+@layout AuthLayout
+        
+
+
+@code {
+
+}
+
+<!--
+    Using a percentage
+    Use h-full or h-<fraction> utilities like h-1/2 and h-2/5 to give an element a
+        percentage height.
+-->
+<div class="lg:w[70%] h-3/4 md:h-full flex flex-col justify-center">
+    <h3 class="text-xl font-semibold text-white">Welcome back!</h3>
+    <p class="text-xs text-white mt-[5px] mb-6">
+        Pleaease enter your details to login.
+    </p>
+
+    <EditForm Model="Product" OnValidSubmit="OnConfirm" FormName="NewProductForm" class="space-y-4">
+
+    </EditForm>
+
+</div>
