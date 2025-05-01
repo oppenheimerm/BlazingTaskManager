@@ -16,3 +16,19 @@
         overflow-x: hidden;
     }
 }
+
+.input-box {
+    @apply w-full flex justify-between gap-3 text-sm text-white bg-bt-purple-50/75 
+    rounded px-4 py-3 mb-4 mt-3 border-bt-purple-100 outline-none shadow-md;
+}
+
+.btn-primary {
+    @apply w-full text-sm font-medium text-white bg-bt-purple-200 hover:bg-bt-purple-500 
+    focus:ring-4 focus:outline-none focus:ring-bt-purple-500/75 shadow-lg shadow-bt-shadow/45
+    p-[10px] rounded-md my-1 cursor-pointer;
+}
+
+.btn-primary-icon {
+    @apply px-6 py-3.5 inline-flex items-center bg-bt-purple-200 hover:bg-bt-purple-500 focus:ring-4 
+    focus:outline-none focus:ring-bt-purple-500/75 rounded-lg text-center shadow-lg shadow-bt-shadow/45;
+}

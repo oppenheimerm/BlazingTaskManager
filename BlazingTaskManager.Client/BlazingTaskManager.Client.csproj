@@ -10,4 +10,8 @@
     <Folder Include="wwwroot\lib\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\BlazingTaskManager.Shared\BlazingTaskManager.Shared.csproj" />
+  </ItemGroup>
+
 </Project>

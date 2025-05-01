@@ -6,11 +6,43 @@
 <PageTitle>BlazingTaskManager - Login</PageTitle>
 
 @layout AuthLayout
-        
+
 
 
 @code {
+    AuthenticateRequestDTO? AuthenticateRequestDTO { get; set; }
 
+    EditContext? editContext;
+    ValidationMessageStore? messageStore;
+
+    protected override async Task OnInitializedAsync()
+    {
+        AuthenticateRequestDTO ??= new();
+
+        // In Blazor Web Apps, client-side validation requires an active Blazor SignalR
+        // circuit. Client-side validation isn't available to forms in components that
+        // have adopted static server-side rendering (static SSR). Forms that adopt static SSR
+        // are validated on the server after the form is submitted.
+        editContext = new(AuthenticateRequestDTO);
+        editContext.OnValidationRequested += HandleValidationRequested;
+        messageStore = new(editContext);
+    }
+
+    private void HandleValidationRequested(object? sender, ValidationRequestedEventArgs args)
+    {
+        messageStore?.Clear();
+
+        if (AuthenticateRequestDTO is null || AuthenticateRequestDTO.Password is null ||
+            string.IsNullOrEmpty(AuthenticateRequestDTO.Email))
+        {
+            // Add a validation message to the ValidationMessageStore.
+            AuthenticateRequestDTO = new AuthenticateRequestDTO();
+            messageStore?.Add(() => AuthenticateRequestDTO.Password!, "Password is required.");
+            messageStore?.Add(() => AuthenticateRequestDTO.Email!, "Email is required.");
+        }
+    }
+
+    async Task OnSubmitAsync() { }
 }
 
 <!--
@@ -24,8 +56,44 @@
         Pleaease enter your details to login.
     </p>
 
-    <EditForm Model="Product" OnValidSubmit="OnConfirm" FormName="NewProductForm" class="space-y-4">
+    <EditForm Model="AuthenticateRequestDTO" OnValidSubmit="OnSubmitAsync" FormName="LoginForm" class="">
+        <DataAnnotationsValidator /> <!-- Required for validation -->
+        <div>
+            <label for="@AuthenticateRequestDTO!.Email" class="text-[13px] text-white font-bold">Email address</label>
+            <div class="input-box">
+                <InputText @bind-Value="@AuthenticateRequestDTO!.Email" name="@AuthenticateRequestDTO!.Email" id="@AuthenticateRequestDTO!.Email"
+                           class="w-full bg-transparent outline-none placeholder-bt-black-400 text-bt-black-400" 
+                           placeholder="Email address" required />
+                <ValidationMessage For="() => AuthenticateRequestDTO.Email" />
+            </div>
+        </div>
 
+        <div>
+            <label for="@AuthenticateRequestDTO!.Password" class="text-[13px] text-white font-bold">Password</label>
+            <div class="input-box">
+                <InputText @bind-Value="@AuthenticateRequestDTO!.Password" name="@AuthenticateRequestDTO!.Password" id="@AuthenticateRequestDTO!.Password"
+                           class="w-full bg-transparent outline-none placeholder-bt-black-400 text-bt-black-400"
+                           placeholder="Password" required />
+                <ValidationMessage For="() => AuthenticateRequestDTO.Password" />
+            </div>
+        </div>
+
+        <p class="text-red-500 text-xs pb-2.5 font-bold">
+            You login form has errors.
+        </p>
+
+        <div class="">
+            <button typeof="submit" class="btn-primary-icon">
+                <span class="material-symbols-rounded me-2">
+                    check_circle
+                </span>
+                Login
+            </button>
+        </div>
+
+        <p class="text-[13px] text-white mt-3">Don't have an account? 
+            <a class="text-primary underline text-bt-purple-200 hover:text-bt-purple-500 font-bold" href="/account/register">Register here.</a>
+        </p>
     </EditForm>
 
 </div>
