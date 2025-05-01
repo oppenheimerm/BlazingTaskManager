@@ -17,6 +17,7 @@ module.exports = {
               'bt-purple-300': '#998af2',
               'bt-purple-400': '#887af0',
               'bt-purple-500': '#766bed',
+              'bt-shadow': '#8c8a91'
           },
       },
       fontFamily: {
