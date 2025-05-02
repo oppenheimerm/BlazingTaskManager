@@ -12,10 +12,11 @@
 @code {
     AuthenticateRequestDTO? AuthenticateRequestDTO { get; set; }
 
+
     EditContext? editContext;
     ValidationMessageStore? messageStore;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         AuthenticateRequestDTO ??= new();
 

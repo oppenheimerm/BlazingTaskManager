@@ -1,5 +1,112 @@
 ﻿@page "/account/register"
 
-@code {
+@inject NavigationManager NavigationManager
 
+<PageTitle>BlazingTaskManager - Register</PageTitle>
+
+@layout AuthLayout
+
+@code {
+    RegisterRequestDTO? RegisterRequest { get; set; }
+
+
+    protected override void OnInitialized()
+    {
+        RegisterRequest ??= new();
+    }
+
+    async Task OnSubmitAsync() { }
 }
+
+
+<!--
+    Using a percentage
+    Use h-full or h-<fraction> utilities like h-1/2 and h-2/5 to give an element a
+        percentage height.
+-->
+<div class="lg:w[70%] h-3/4 md:h-full flex flex-col justify-center">
+
+    <p class="text-xl font-semibold text-white mt-3">
+        Create an account
+    </p>    
+
+    <p class="text-xs text-white mb-3 ">
+        Your account is only moments away!
+    </p>
+
+    <EditForm Model="RegisterRequest" OnValidSubmit="OnSubmitAsync" FormName="RegisterForm" class="">
+        <DataAnnotationsValidator /> <!-- Required for validation -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label for="@RegisterRequest!.FirstName" class="text-[13px] text-white font-bold">First Name</label>
+                <div class="input-box">
+                    <InputText @bind-Value="@RegisterRequest!.FirstName" name="@RegisterRequest!.FirstName"
+                               id="@RegisterRequest!.FirstName"
+                               class="w-full bg-transparent outline-none placeholder-bt-black-400 text-bt-black-400"
+                               placeholder="First name" required />
+                    <ValidationMessage For="() => RegisterRequest.FirstName" />
+                </div>
+            </div>
+
+            <div>
+                <label for="@RegisterRequest!.LasttName" class="text-[13px] text-white font-bold">Last Name</label>
+                <div class="input-box">
+                    <InputText @bind-Value="@RegisterRequest!.LasttName" name="@RegisterRequest!.LasttName"
+                               id="@RegisterRequest!.LasttName"
+                               class="w-full bg-transparent outline-none placeholder-bt-black-400 text-bt-black-400"
+                               placeholder="Last name" required />
+                    <ValidationMessage For="() => RegisterRequest.LasttName" />
+                </div>
+            </div>
+
+            <div>
+                <label for="@RegisterRequest!.Email" class="text-[13px] text-white font-bold">Email</label>
+                <div class="input-box">
+                    <InputText @bind-Value="@RegisterRequest!.Email" name="@RegisterRequest!.Email"
+                               id="@RegisterRequest!.Email"
+                               class="w-full bg-transparent outline-none placeholder-bt-black-400 text-bt-black-400"
+                               placeholder="Email address" required />
+                    <ValidationMessage For="() => RegisterRequest.Email" />
+                </div>
+            </div>
+
+            <div>
+                <label for="@RegisterRequest!.Password" class="text-[13px] text-white font-bold">Password</label>
+                <div class="input-box">
+                    <InputText @bind-Value="@RegisterRequest!.Password" name="@RegisterRequest!.Password"
+                               id="@RegisterRequest!.Password" type="password"
+                               class="w-full bg-transparent outline-none placeholder-bt-black-400 text-bt-black-400"
+                               placeholder="Password " required />
+                    <ValidationMessage For="() => RegisterRequest.Password" />
+                </div>
+            </div>
+
+            <div>
+                <label for="@RegisterRequest!.ConfirmPassword" class="text-[13px] text-white font-bold">Confirm Password</label>
+                <div class="input-box">
+                    <InputText @bind-Value="@RegisterRequest!.ConfirmPassword" name="@RegisterRequest!.ConfirmPassword"
+                               id="@RegisterRequest!.ConfirmPassword" type="password"
+                               class="w-full bg-transparent outline-none placeholder-bt-black-400 text-bt-black-400"
+                               placeholder="confirm Password" required />
+                    <ValidationMessage For="() => RegisterRequest.ConfirmPassword" />
+                </div>
+            </div>
+        </div>
+
+        <div class="">
+            <button typeof="submit" class="btn-primary-icon">
+                <span class="material-symbols-rounded me-2">
+                    check_circle
+                </span>
+                Register
+            </button>
+        </div>
+
+        <p class="text-[13px] text-white mt-3">
+            Already have an account?
+            <a class="text-primary underline text-bt-purple-200 hover:text-bt-purple-500 font-bold" href="/account/login">Login here.</a>
+        </p>
+
+    </EditForm>
+
+</div>
