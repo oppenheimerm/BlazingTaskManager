@@ -1,0 +1,20 @@
+﻿@inherits LayoutComponentBase
+
+@code {
+
+}
+
+<div class="bg-bt-black-200 text-white">
+    <Navbar />
+    <div class="flex">
+        <!-- Sidemenu -->
+        <div class="max-[1080px]:hidden">
+            <SideMenu />
+        </div>
+        <!-- Sidemenu ends-->
+
+        <div class="grow mx-5">
+            @Body
+        </div>
+    </div>
+</div>

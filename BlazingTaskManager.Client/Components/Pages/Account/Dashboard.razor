@@ -1,0 +1,138 @@
+﻿@page "/account/dashboard"
+
+@using BlazingTaskManager.Client.UI
+
+@inject NavigationManager NavigationManager
+
+
+<PageTitle>BlazingTaskManager - Dashboard</PageTitle>
+
+@layout AuthUserLayout
+
+@code {
+
+    List<BTask>? UserTasks {get; set;}
+
+    protected override void OnInitialized()
+    {
+        UserTasks = GetBTasks();
+    }
+
+    List<BTask> GetBTasks()
+    {
+        var tasks = new List<BTask>
+        {
+            new BTask
+            {
+                Id = 1,
+                Title = "Task 1",
+                Description = "Description for Task 1",
+                CreatedAt = DateTime.Now,
+                DueDate = DateTime.Now.AddDays(7),
+                TaskStatus = BTaskStatus.InProgress,
+                Priority = BPriority.Low,
+                UserId =  Guid.Parse("1775a05a-e439-476f-aa0b-fd3d51f1b753")
+            },
+            new BTask
+            {
+                Id = 2,
+                Title = "Task 2",
+                Description = "Description for Task 2",
+                CreatedAt = DateTime.Now.AddDays(-6),
+                DueDate = DateTime.Now.AddDays(6),
+                TaskStatus = BTaskStatus.NotStarted,
+                Priority = BPriority.Medium,
+                UserId =  Guid.Parse("1bc1d680-ffc2-4d5c-ab1d-19dc63d7eba6")
+            },
+            new BTask
+            {
+                Id = 3,
+                Title = "Task 3",
+                Description = "Description for Task 3",
+                CreatedAt = DateTime.Now.AddDays(-6),
+                DueDate = DateTime.Now.AddDays(7),
+                TaskStatus = BTaskStatus.OnHold,
+                Priority = BPriority.Low,
+                UserId =  Guid.Parse("62d6be1e-589b-413d-851c-85367aa7c4ae")
+            },
+            new BTask
+            {
+                Id = 4,
+                Title = "Task 4",
+                Description = "Description for Task 4",
+                CreatedAt = DateTime.Now.AddDays(-14),
+                DueDate = DateTime.Now.AddDays(-8),
+                TaskStatus = BTaskStatus.Completed,
+                Priority = BPriority.High,
+                UserId =  Guid.Parse("6cca454f-29c5-431d-af54-74627bc2d2da")
+            },
+            new BTask
+            {
+                Id = 5,
+                Title = "Nulla dolor velit adipisi",
+                Description = "Description for Task 5",
+                CreatedAt = DateTime.Now.AddDays(-14),
+                DueDate = DateTime.Now.AddDays(-8),
+                TaskStatus = BTaskStatus.OnHold,
+                Priority = BPriority.Medium,
+                UserId =  Guid.Parse("be694029-9a1c-4f08-9f7a-e558bbf28146")
+            }
+        };
+        return tasks;
+    }
+}
+
+
+<div class="card my-5">
+    <div>
+        <div class="col-span3">
+            <h2 class="text-xl md:text-2xl">Good Morning! Davide</h2>
+            <p class="text-xs md:text-[12px] text-white mt-1.5">
+                @DateTime.Now.ToString("dddd, dd MMMM yyyy")
+            </p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mt-5">
+        <!-- info card -->
+        @{
+            var _taskGroupQuery = GetBTasks().GroupBy(x => x.TaskStatus)
+            .Select( _taskGroupQuery => new
+            {
+                GroupTaskStatus = _taskGroupQuery.Key,
+                GroupTaskStatusCount = _taskGroupQuery.Count()
+            });
+
+            foreach (var itm in _taskGroupQuery)
+            {
+
+                var _statusColour = UIHelpers.GetStatusBadgeColour(itm.GroupTaskStatus);
+
+                <InfoCard Icon="" Label="@itm.GroupTaskStatus.ToString()" Value="@itm.GroupTaskStatusCount.ToString()" Color="@_statusColour" />
+            }
+        }
+    </div>
+
+</div>
+
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-4 md:my-6">
+    <div class="md:col-span-2">
+        <div class="card">
+            <div class="flex items-center justify-between">
+                <h5 class="text-lg">Recent Task</h5>
+
+                <a class="card-btn shadow-bt-black-500/40" href="#">
+                    See All
+                    <span class="material-symbols-rounded">
+                        arrow_forward
+                    </span>
+                </a>
+
+            </div>
+
+            <TaskList Task="UserTasks" />
+
+        </div>
+    </div>
+</div>
