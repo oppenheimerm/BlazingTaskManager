@@ -1,0 +1,64 @@
+﻿@using BlazingTaskManager.Client.Components.Data
+
+@code {
+
+    List<MenuOption>? MenuOptions { get; set; }
+    string activeCSSMenuItem { get; set; } = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        MenuOptions = UI.UIHelpers.GetMenuOptions();
+    }
+}
+
+<div class="w-64 h-[calc(100vh-61px)] bg-bt-black-400 border-r-2 border-solid border-bt-black-200 sticky
+    top-[61px] z-20">
+
+    <div class="flex flex-col items-center justify-center mb-7 pt-5">
+
+        <div class="relative">
+            <img class=" w-10 h-10 rounded-full bg-slate-400 rounded full" src="./img/assets/user-1.jpg" alt="profile image" />
+        </div>
+
+        <!-- TODO Admin only -->
+        <div class="text-[8px] font-medium text-white bg-bt-purple-500 px-3 py-0.5 rounded mt-1">
+            Admin
+        </div>
+
+        <h5 class="">
+            SomeUser
+        </h5>
+
+        <p class="">someuser@eamil.com</p>
+
+    </div>
+
+
+
+    @{
+        if (MenuOptions is not null)
+        {
+            foreach (var itm in MenuOptions)
+            {
+                if (itm.Title == "Dashboard")
+                {
+                    activeCSSMenuItem = "text-bt-black-500 bg-gradient-to-tr  from-bt-purple-200/40 to-purple-500/80 border-r-4 border-purple-500";
+                }
+                else
+                {
+                    activeCSSMenuItem = "text-white";
+                }
+                <button class="w-full flex items-center gap-4 text-[12px] py-3 px-6 mb-3 cursor-pointer  @activeCSSMenuItem">
+                    <span class="material-symbols-rounded">
+                        @itm.IconName
+                    </span>
+                    <span class="text-base font-bold">
+                        @itm.Title
+                    </span>
+                </button>
+            }
+        }
+    }
+
+
+</div>

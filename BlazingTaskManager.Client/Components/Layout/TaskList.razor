@@ -1,0 +1,63 @@
+﻿@using BlazingTaskManager.Client.UI
+
+@code {
+    [Parameter] public List<BTask>? Task { get; set; }   
+
+}
+
+<div class="overflow-x-auto p-0 rounded-lg mt-3">
+    <table class="min-w-full">
+        <thead>
+            <tr class="text-left">
+                <th class="py-3 px-4 text-white font-medium text-[12px] hidden md:table-cell">Id</th>
+                <th class="py-3 px-4 text-white font-medium text-[12px]">Title</th>
+                <th class="py-3 px-4 text-white font-medium text-[12px]">Status</th>
+                <th class="py-3 px-4 text-white font-medium text-[12px]">Priority</th>
+                <th class="py-3 px-4 text-white font-medium text-[12px] hidden md:table-cell">Created At</th>
+                <th class="py-3 px-4 text-white font-medium text-[12px] hidden md:table-cell">Due Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Task != null)
+            {
+                foreach (var task in Task)
+                {
+
+                    <tr class="border-t border-solid border-bt-black-100 ">
+
+                        <td class="hidden md:table-cell my-3 mx-4 text-white text-[12px] ">@task.Id</td>
+                        <!--
+                            Truncate multiline text
+                            Use the line-clamp-* utilities to truncate a block of text after a specific number of lines.
+                            See: https://v3.tailwindcss.com/docs/line-clamp#basic-usage
+                        -->
+                        <td class="my-3 mx-4 line-clamp-1 overflow-hidden hidden md:table-cell">@task.Title</td>
+                        <td class="py-4 px-4">
+                            <span class="px-2 py-1 text-xm rounded inline-block badge @UIHelpers.GetStatusBadgeColour(task.TaskStatus)">@task.TaskStatus.ToString()</span>
+                            </td>
+                        <td class="py-4 px-4">
+                            <span class="px-2 py-1 text-xm rounded inline-block badge @UIHelpers.GetPriorityBadgeColour(task.Priority)">@task.Priority.ToString()</span>
+                        </td>
+                        <td class="hidden md:table-cell my-3 mx-4">
+                            @task.CreatedAt?.ToString("dddd, dd MMMM yyyy")
+                        </td>
+                        <td class="hidden md:table-cell my-3 mx-4">
+                            @task.DueDate?.ToString("dddd, dd MMMM yyyy")                           
+                       </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+<!--
+    Tailwind wont dynamically add colours not previously
+    used / complied so I'm adding an hidden div here
+    with colour I can user later and will be complied
+
+-->
+<div class="hidden bg-green-300"></div>
+<div class="hidden bg-yellow-300"></div>
+<div class="hidden bg-red-300"></div>
+<div class="hidden bg-gray-300"></div>

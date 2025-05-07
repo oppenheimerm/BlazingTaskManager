@@ -32,3 +32,14 @@
     @apply px-6 py-3.5 inline-flex items-center bg-bt-purple-200 hover:bg-bt-purple-500 focus:ring-4 
     focus:outline-none focus:ring-bt-purple-500/75 rounded-lg text-center shadow-lg shadow-bt-shadow/45;
 }
+
+.card {
+    @apply bg-bt-black-400/50 p-6 rounded-2xl text-white shadow-md shadow-bt-black-500/20 border 
+    border-bt-purple-50/20;
+}
+
+.card-btn {
+    @apply flex items-center gap-3 text-[12px] font-medium text-bt-black-500 bg-bt-purple-50 
+    hover:bg-bt-purple-500 px-4 py-1.5 rounded-lg border-bt-purple-500/50 border cursor-pointer
+    shadow-bt-black-500/40;    
+}
