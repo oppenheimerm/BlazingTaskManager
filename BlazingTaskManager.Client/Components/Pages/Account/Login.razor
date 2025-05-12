@@ -1,20 +1,32 @@
 ﻿@page "/account/login"
 
+@using Microsoft.AspNetCore.Components.Authorization
+
 @inject NavigationManager NavigationManager
+@inject IClientService ClientService
 @inject IAccountLoginVM ViewModel
+@inject AuthenticationStateProvider AuthStateProvider
 
 <PageTitle>BlazingTaskManager - Login</PageTitle>
 
 @layout AuthLayout
 
+@rendermode InteractiveServer
 
 
 @code {
-    AuthenticateRequestDTO? AuthenticateRequestDTO { get; set; }
-
 
     EditContext? editContext;
     ValidationMessageStore? messageStore;
+
+    string? ErrorMessage { get; set; }
+    bool showErrorAlert = false;
+
+    // The [SupplyParameterFromForm] attribute indicates that the value of the
+    // associated property should be supplied from the form data. Data in the request
+    // that matches the property's name is bound to the property.
+    [SupplyParameterFromForm(FormName = "LoginForm")]
+    AuthenticateRequestDTO? AuthenticateRequestDTO { get; set; }
 
     protected override void OnInitialized()
     {
@@ -43,7 +55,33 @@
         }
     }
 
-    async Task OnSubmitAsync() { }
+    async Task OnSubmitAsync()
+    {
+        if (AuthenticateRequestDTO is not null)
+        {
+            var status = await ClientService.LoginAsync(AuthenticateRequestDTO);
+            if (!status.Success)
+            {
+                ErrorMessage = $" {status.Message} ";
+                showErrorAlert = true;
+                StateHasChanged();
+            }
+            else
+            {
+                var customAuthStateProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
+                await customAuthStateProvider.UpdateAuthenticatedState(status);
+                NavigationManager.NavigateTo("/account/dashboard", true);
+            }
+        }
+    }
+
+    public void Dispose()
+    {
+        if (editContext is not null)
+        {
+            editContext.OnValidationRequested -= HandleValidationRequested;
+        }
+    }
 }
 
 <!--
@@ -57,14 +95,14 @@
         Pleaease enter your details to login.
     </p>
 
-    <EditForm Model="AuthenticateRequestDTO" OnValidSubmit="OnSubmitAsync" FormName="LoginForm" class="">
-        <DataAnnotationsValidator /> <!-- Required for validation -->
+    <EditForm OnValidSubmit="OnSubmitAsync" FormName="LoginForm" class="" EditContext="editContext">
+
         <div>
             <label for="@AuthenticateRequestDTO!.Email" class="text-[13px] text-white font-bold">Email address</label>
             <div class="input-box">
                 <InputText @bind-Value="@AuthenticateRequestDTO!.Email" name="@AuthenticateRequestDTO!.Email" id="@AuthenticateRequestDTO!.Email"
                            class="w-full bg-transparent outline-none placeholder-bt-black-400 text-bt-black-400" 
-                           placeholder="Email address" required />
+                           placeholder="Email address"/>
                 <ValidationMessage For="() => AuthenticateRequestDTO.Email" />
             </div>
         </div>
@@ -74,14 +112,20 @@
             <div class="input-box">
                 <InputText @bind-Value="@AuthenticateRequestDTO!.Password" name="@AuthenticateRequestDTO!.Password" id="@AuthenticateRequestDTO!.Password"
                            class="w-full bg-transparent outline-none placeholder-bt-black-400 text-bt-black-400"
-                           placeholder="Password" required />
+                           placeholder="Password" type="password" />
                 <ValidationMessage For="() => AuthenticateRequestDTO.Password" />
             </div>
         </div>
 
-        <p class="text-red-500 text-xs pb-2.5 font-bold">
-            You login form has errors.
-        </p>
+        @{
+            if (showErrorAlert)
+            {
+                <p class="text-red-500 text-xs pb-2.5 font-bold">
+                    @ErrorMessage
+                </p>
+            }
+        }
+
 
         <div class="">
             <button typeof="submit" class="btn-primary-icon">

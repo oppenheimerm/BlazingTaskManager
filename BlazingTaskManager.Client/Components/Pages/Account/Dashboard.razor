@@ -1,9 +1,14 @@
 ﻿@page "/account/dashboard"
 
+@attribute [Authorize(Roles="USER")]
+
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using BlazingTaskManager.Client.AuthState
 @using BlazingTaskManager.Client.UI
 
 @inject NavigationManager NavigationManager
-
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <PageTitle>BlazingTaskManager - Dashboard</PageTitle>
 
@@ -11,11 +16,33 @@
 
 @code {
 
-    List<BTask>? UserTasks {get; set;}
+    List<BTask>? UserTasks { get; set; }
+    string? FirstName { get; set; }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         UserTasks = GetBTasks();
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity != null && user.Identity.IsAuthenticated)
+        {
+            FirstName = user.Identity.Name;
+            Console.WriteLine($"User is authenticated: {user.Identity.Name}");
+        }
+        else
+        {
+            Console.WriteLine("User is not authenticated.");
+        }
+    }
+
+    //  Remember Javascript call can obly be called here, our
+    // helpers methods all require javascript
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+        }
     }
 
     List<BTask> GetBTasks()
@@ -80,13 +107,23 @@
         };
         return tasks;
     }
+
+
+
+
 }
 
 
 <div class="card my-5">
     <div>
         <div class="col-span3">
-            <h2 class="text-xl md:text-2xl">Good Morning! Davide</h2>
+            @{
+                if(!string.IsNullOrEmpty(FirstName))
+                {
+                    <h2 class="text-xl md:text-2xl">Good Morning! @FirstName</h2>
+                }
+            }
+            
             <p class="text-xs md:text-[12px] text-white mt-1.5">
                 @DateTime.Now.ToString("dddd, dd MMMM yyyy")
             </p>
@@ -97,7 +134,7 @@
         <!-- info card -->
         @{
             var _taskGroupQuery = GetBTasks().GroupBy(x => x.TaskStatus)
-            .Select( _taskGroupQuery => new
+            .Select(_taskGroupQuery => new
             {
                 GroupTaskStatus = _taskGroupQuery.Key,
                 GroupTaskStatusCount = _taskGroupQuery.Count()

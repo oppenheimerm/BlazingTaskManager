@@ -13,8 +13,8 @@ users and track completion etc.
 - Entity Framework Core tools reference - .NET Core CLI
 - SQL Server or any other database
 - Entity Framework Core
-- Node.js and npm (for TailwindCss)
 - [TailwindCss](https://tailwindcss.com/)
+- Node.js and npm (for TailwindCss)
 
 ## Getting Started 🦸
 
@@ -86,7 +86,40 @@ then run the app and navigate to the following endpoint in your browser:
 Your role are created and you can now use the app.
 
 ### BlazingTaskManager.Client
+This is the Blazor WebAssembly client application. It is a single-page
+application (SPA) that communicates with the BlazingTaskManager.AuthenticationAPI
+using HTTP requests. The client is responsible for rendering the user interface and handling user interactions.
+
+
 #### Dependencies
+- ```Blazored.LocalStorage```
+
+#### Setup
+ 
+ ##### Dependency Injection - Add a scoped HttpClient in `Program.cs`, with your
+ app host adddress.(found in ***BlazingTaskMager.Client/Properties/ `launchSettings.json`***)
+ i.e.
+ ```csharp
+ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7015/") });
+ ```
+
+ ##### WebConfig
+
+ ```json
+ {
+  "ConnectionStrings": {
+    "AccountAPIBaseURL": "api/Accounts",
+  },
+  "ApplicationSettings": {
+    "LocalStorageKey": "BT_LS"
+  },
+  "JwtSettings": {
+    "Secret": ">>INSERT YOUR SECRET KEY HERE<<",
+    "Issuer": "http://localhost:5000",
+    "Audience": "http://localhost:5000"
+  }
+}
+```
 
 ### BlazingTaskManager.Shared
 #### Dependencies

@@ -1,16 +1,16 @@
 ﻿
 using BlazingTaskManager.Shared.Domain.DTO.Role;
 
-namespace BlazingTaskManager.Shared.Domain.DTO.Authentication
+namespace BlazingTaskManager.Shared.Domain.DTO.User
 {
     /// <summary>
-    /// Represents the claims of a user in the Blazing Task Manager application.
+    /// A <see cref="BTUser"/> Claim with <see cref="BlazingTaskManager.Shared.Domain.Role"/> ('s) collection.
     /// </summary>
-    public class BTUserClaimDTO
+    public class BTUserClaimsDTO
     {
         public Guid? Id { get; set; }
         public string? FirstName { get; set; }
-        public string? Email{ get; set; }
+        public string? Email { get; set; }
         public List<RoleDTO>? Roles { get; set; }
     }
 }

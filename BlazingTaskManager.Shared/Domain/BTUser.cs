@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
+using BlazingTaskManager.Shared.Domain.DTO.Role;
 
 namespace BlazingTaskManager.Shared.Domain
 {
