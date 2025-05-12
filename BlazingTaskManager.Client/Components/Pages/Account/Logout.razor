@@ -1,0 +1,22 @@
+﻿@page "/account/logout"
+
+@using Microsoft.AspNetCore.Components.Authorization
+
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
+
+@rendermode InteractiveServer
+
+@code {
+    protected override void OnInitialized()
+    {
+
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        var customAuthStateProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
+        await customAuthStateProvider.UpdateAuthenticatedState(null);
+        NavigationManager.NavigateTo("/", true);
+    }
+}

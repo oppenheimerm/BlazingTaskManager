@@ -1,0 +1,12 @@
+﻿@inject NavigationManager UriHelper
+@inject NavigationManager NavigationManager
+
+@code {
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        NavigationManager.NavigateTo("/account/login", false);
+    }
+
+}

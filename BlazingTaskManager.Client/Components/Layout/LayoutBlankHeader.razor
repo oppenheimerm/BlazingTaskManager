@@ -1,0 +1,163 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Blazored.LocalStorage
+@using BlazingTaskManager.Client.AuthState
+
+@inject IPageUIService PageUIStateService
+@inject IConfiguration _configuration
+@inject ILocalStorageService LocalStorageService
+
+@rendermode InteractiveServer
+
+@code {
+    string? FirstName { get; set; }
+    bool Authenticated { get; set; } = false;
+    string MobileMenuVisibiliyCss = "hidden";
+    
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            //StateHasChanged();
+        }
+
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+    }
+
+    void OnToggleMobileWindow()
+    {
+        PageUIStateService.OnClickToggleMobileMenu();
+        MobileMenuVisibiliyCss = PageUIStateService.MobileWindowOpen ? "" : "hidden";
+        StateHasChanged();
+    }
+}
+
+
+<!-- header -->
+<header class="fixed w-full">
+    <nav class="bg-bt-black-400 border-bt-black-100 py-2.5">
+        <div class="flex flex-wrap items-center justify-between max-w-screen-xl px-4 mx-auto">
+            <a href="#" class="flex items-center">
+                <img src="../img/assets/header-logo.png" class="h-[36px] w-[36px][ mr-3 sm:h-9" alt="BlazingTask" />
+                <span class="self-center text-xl font-semibold whitespace-nowrap dark:text-white">BlazingTask</span>
+            </a>
+
+            <div class="flex items-center lg:order-2">
+                <div class="hidden mt-2 mr-4 sm:inline-block">
+                    <a class="github-button" href="https://github.com/themesberg/landwind" data-size="large" data-icon="octicon-star" data-show-count="true" aria-label="Star themesberg/landwind on GitHub">Star</a>
+                </div>
+
+                <a href="#" class="text-white bg-bt-purple-200 hover:bg-bt-purple-500 focus:ring-4 focus:ring-bt-purple-50
+                        font-medium rounded-lg text-sm px-4 lg:px-5 py-2 lg:py-2.5 sm:mr-2 lg:mr-0 
+                        transition-all ease-in-out duration-300">
+                    Download
+                </a>
+
+                <Microsoft.AspNetCore.Components.Authorization.AuthorizeView>
+                    <NotAuthorized>
+                        <a href="/account/login" class='px-4 py-2 text-sm rounded-full font-bold text-white border-2 
+                            border-bt-purple-50/50 bg-transparent hover:bg-bt-purple-200 transition-all ease-in-out duration-300
+                            ml-2 mr-2'>
+                            Login
+                        </a>
+                        <a href="account/register" class='px-4 py-2 text-sm rounded-full font-bold text-white border-2
+                            border-bt-purple-50/50 bg-transparent hover:bg-bt-purple-200 transition-all ease-in-out duration-300
+                            ml-2 mr-2'>
+                            Register
+                        </a>
+                    </NotAuthorized>
+                    <Authorized>
+                        <a href="/account/dashboard" class="relative flex rounded-full bg-gray-800 text-sm focus:ring-2 focus:ring-white 
+                            focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-hidden ml-1 mr-1" id="user-menu-button" 
+                            aria-expanded="false" aria-haspopup="true">
+                            <span class="absolute -inset-1.5"></span>
+                            <span class="sr-only">Open user menu</span>
+                            <img class="size-8 rounded-full" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="">
+                        </a>
+                        <a href='account/logout' class=" w-full px-6 py-3.5 text-base font-medium text-white inline-flex items-center
+                                            bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg
+                                            text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                            <span class="material-symbols-rounded text-white me-2">
+                                logout
+                            </span>
+                            Logout
+                        </a>
+                    </Authorized>
+                </Microsoft.AspNetCore.Components.Authorization.AuthorizeView>
+
+                <!-- responsive menu button -->
+                <button data-collapse-toggle="mobile-menu-2" type="button" class="inline-flex items-center p-2 ml-1 text-sm
+                        text-white rounded-lg lg:hidden hover:bg-bt-purple-50 focus:outline-none focus:ring-2 focus:ring-bt-purple-200
+                        hover:text-bt-black-500" @onclick="OnToggleMobileWindow">
+                    <span class="sr-only">Open main menu</span>
+                    <span class="material-symbols-rounded">
+                        menu
+                    </span>
+                </button>
+            </div>
+
+            <!-- responsive menu items-->
+            <div class="items-center justify-between lg:hidden w-full lg:flex lg:w-auto lg:order-1 @MobileMenuVisibiliyCss" id="">
+                <ul class="flex flex-col mt-4 font-medium lg:flex-row lg:space-x-8 lg:mt-0">
+                    <li>
+                        <a href="#" class="block py-2 pl-3 pr-4 text-white bg-bt-purple-500 rounded lg:bg-transparent
+                                lg:text-bt-purple-500 lg:p-0" aria-current="page">
+                            Home
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="block py-2 pl-3 pr-4 text-white border-b border-bt-black-50/50 hover:bg-bt-purple-200
+                                lg:hover:bg-transparent lg:border-0 lg:hover:text-white lg:p-0 hover:text-bt-black-500">
+                            Features
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="block py-2 pl-3 pr-4 text-white border-b border-bt-black-50/50 hover:bg-bt-purple-200
+                                lg:hover:bg-transparent lg:border-0 lg:hover:text-white lg:p-0 hover:text-bt-black-500">
+                            Contact
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="block py-2 pl-3 pr-4 text-white border-b border-bt-black-50/50 hover:bg-bt-purple-200
+                                lg:hover:bg-transparent lg:border-0 lg:hover:text-white lg:p-0 hover:text-bt-black-500">
+                            Mobile
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <!-- responsive menu items ends-->
+
+            <!-- Desktop Menu items -->
+            <div class="items-center justify-between hidden w-full lg:flex lg:w-auto lg:order-1" id="desktop-menu">
+                <ul class="flex flex-col mt-4 font-medium lg:flex-row lg:space-x-8 lg:mt-0">
+                    <li>
+                        <a href="#" class="block py-2 pl-3 pr-4 text-bt-purple-500 g:p-0 hover:text-bt-purple-500" aria-current="page">
+                            Home
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="block py-2 pl-3 pr-4 text-white  g:p-0 hover:text-bt-purple-500">
+                            Features
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="block py-2 pl-3 pr-4 text-white  g:p-0 hover:text-bt-purple-500">
+                            Contact
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="block py-2 pl-3 pr-4 text-white  g:p-0 hover:text-bt-purple-500">
+                            Desktop
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <!-- Desktop Menu items ends -->
+        </div>
+    </nav>
+</header>
+<!-- header ends -->

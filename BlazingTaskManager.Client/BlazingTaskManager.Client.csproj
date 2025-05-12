@@ -4,10 +4,15 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>15cc8e09-a297-4b0f-b575-1a9f30c294c1</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
     <Folder Include="wwwroot\lib\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
   </ItemGroup>
 
   <ItemGroup>

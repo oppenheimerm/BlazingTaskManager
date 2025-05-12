@@ -82,11 +82,31 @@ namespace BlazingTaskManager.AuthenticationAPI.Repositories
         }
 
         /// <summary>
+        /// User must verfiy their email address with the token generated on registration.
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public async Task<BaseAPIResponse> VerifyEmailAsync(string token)
+        {
+            var account = await _authenticationDataContext.Users.SingleOrDefaultAsync(x => x.VerificationToken == token);
+
+            if (account == null)
+                return new BaseAPIResponse() { Success = false, Message = "Email verification failed" };
+
+            account.Verified = DateTime.UtcNow;
+            account.VerificationToken = null;
+
+            _authenticationDataContext.Users.Update(account);
+            await _authenticationDataContext.SaveChangesAsync();
+            return new BaseAPIResponse() { Success = true, Message = string.Empty };
+        }
+
+        /// <summary>
         /// Get instance of <see cref="BTUser"/> by user Id
         /// </summary>
         /// <param name="Id"></param>
         /// <returns></returns>
-        public async Task<BTUser?> GetUserByIdAsync(Guid Id)
+        public async Task<BTUserDTO?> GetUserByIdAsync(Guid Id)
         {
             var user = await _authenticationDataContext.Users
                 .Where(u => u.Id == Id)
@@ -96,12 +116,13 @@ namespace BlazingTaskManager.AuthenticationAPI.Repositories
 
             if (user is not null)
             {
-                List<Role>? roles = await GetRolesForUser(user.Id);
+                var userFound = user.ToDto();
+                List<RoleDTO>? roles = await GetRolesForUser(user.Id);
                 if (roles is not null)
                 {
-                    user.Roles = roles.ToList();
+                    userFound.Roles = roles.ToList();
                 }
-                return user;
+                return userFound;
 
             }
             return null!;
@@ -112,7 +133,7 @@ namespace BlazingTaskManager.AuthenticationAPI.Repositories
         /// </summary>
         /// <param name="Email"></param>
         /// <returns></returns>
-        public async Task<BTUser?> GetUserByEmailAsync(string Email)
+        public async Task<BTUserDTO?> GetUserByEmailAsync(string Email)
         {
             if (!string.IsNullOrEmpty(Email))
             {
@@ -124,12 +145,13 @@ namespace BlazingTaskManager.AuthenticationAPI.Repositories
 
                 if (user is not null)
                 {
-                    List<Role>? roles = await GetRolesForUser(user.Id);
+                    var userFound = user.ToDto();
+                    List<RoleDTO>? roles = await GetRolesForUser(user.Id);
                     if (roles is not null)
                     {
-                        user.Roles = roles.ToList();
+                        userFound.Roles = roles.ToList();
                     }
-                    return user;
+                    return userFound;
                 }
                 return null!;
             }
@@ -189,6 +211,80 @@ namespace BlazingTaskManager.AuthenticationAPI.Repositories
             }
         }
 
+        /// <summary>
+        /// On successful authentication the API returns a short lived JWT access token that expires after 15 minutes, 
+        /// and a refresh token that expires after 7 days in an HTTP Only cookie. The JWT is used for accessing secure 
+        /// routes on the API and the refresh token is used for generating new JWT access tokens when (or just before) 
+        /// they expire.
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="ipAddress"></param>
+        /// <returns></returns>
+        public async Task<APIResponseAuthentication> AuthenticateAsync(AuthenticateRequestDTO model, string ipAddress)
+        {
+            if (!string.IsNullOrEmpty(model.Email))
+            {
+                var account = await _authenticationDataContext.Users
+                                .Include(t => t.RefreshTokens)
+                                .AsNoTracking()
+                                .FirstOrDefaultAsync();
+
+                // validate
+                // validate
+                if (account == null || !BCrypt.Net.BCrypt.Verify(model.Password, account.PasswordHash))
+                    return new APIResponseAuthentication(false, "Email or password is incorrect");
+
+                if (!account.IsVerified)
+                    return new APIResponseAuthentication(false, "Pleae verify your account");
+
+                if (account.AccountLockedOut == true)
+                    return new APIResponseAuthentication(false, "Your account is locked.  Please contact our help desk for assistance.");
+
+
+                var accountToBTUserDTO = account.ToDto();
+                List<RoleDTO>? roles = await GetRolesForUser(account.Id);
+                if (roles is not null)
+                {
+                    accountToBTUserDTO.Roles = roles.ToList();
+                }
+
+                // authentication successful so generate jwt and refresh tokens
+                var jwtToken = _jwtUtilities.GenerateToken(accountToBTUserDTO, _configuration["JwtSettings:Secret"]!,
+                    _configuration["JwtSettings:Issuer"]!, _configuration["JwtSettings:Audience"]!);
+                var refreshToken = await GenerateRefreshToken(ipAddress, accountToBTUserDTO.Id);
+                if (account.RefreshTokens is not null  && refreshToken is not null)
+                {
+                    account.RefreshTokens.Add(refreshToken);
+                }
+
+                // remove old refresh tokens from account
+                removeOldRefreshTokens(account);
+
+                // save changes to db
+                _authenticationDataContext.Update(account);
+                await _authenticationDataContext.SaveChangesAsync();
+
+                var accountToDTO = account.ToDto();
+                // get roles for user
+                if (accountToDTO is not null)
+                {
+                    List<RoleDTO>? _roles = await GetRolesForUser(account.Id);
+                    if (_roles is not null)
+                    {
+                        accountToDTO.Roles = _roles.ToList();
+                    }
+                }
+
+                var response = new APIResponseAuthentication(true, string.Empty, accountToDTO, jwtToken, refreshToken.Token);
+                return response;
+            }
+            else
+            {
+                return new APIResponseAuthentication(false, "User not found"); ;
+            }
+
+        }
+
         #region utilities
 
         private string GenerateVerificationToken()
@@ -205,16 +301,86 @@ namespace BlazingTaskManager.AuthenticationAPI.Repositories
         }
 
 
-        private async Task<List<Role>?> GetRolesForUser(Guid userId)
+        private async Task<List<RoleDTO>?> GetRolesForUser(Guid userId)
         {
             var _roles = await _authenticationDataContext.UserRoles.Where(r => r.UserId == userId)
                 .Include(r => r.Role)
-                .Select(x => new Role() { Description = x.Role!.Description, RoleCode = x.Role.RoleCode, RoleName = x.Role.RoleName })
+                .Select(x => new RoleDTO() { Description = x.Role!.Description, RoleCode = x.Role.RoleCode, RoleName = x.Role.RoleName })
                 .AsNoTracking()
                 .ToListAsync();
 
             return _roles;
         }
+
+        /// <summary>
+        /// Generate a new refresh token for the user.  It's a cryptographically strong random sequence of values.
+        /// This inclusion here and not in JwtUtul, is because it has a dependency on _applicationDBContext
+        /// </summary>
+        /// <param name="ipAddress"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        async Task<RefreshToken?> GenerateRefreshToken(string ipAddress, Guid userId)
+        {
+            var refreshToken = new RefreshToken
+            {
+                // token is a cryptographically strong random sequence of values
+                Token = Convert.ToHexString(RandomNumberGenerator.GetBytes(64)),
+                // token is valid for 7 days
+                Expires = DateTime.UtcNow.AddDays(7),
+                Created = DateTime.UtcNow,
+                CreatedByIp = ipAddress,
+                AccountId = userId
+            };
+
+            // ensure token is unique by checking against db
+            var tokenFound = await _authenticationDataContext.RefreshTokens.Where(t => t.Token == refreshToken.Token).FirstOrDefaultAsync();
+
+            if (tokenFound is not null)
+                return await GenerateRefreshToken(ipAddress, userId);
+
+            try
+            {
+                await _authenticationDataContext.RefreshTokens.AddAsync(refreshToken);
+                await _authenticationDataContext.SaveChangesAsync();
+                return refreshToken;
+            }
+            catch
+            {
+                return null!;
+            }
+
+        }
+
+        /// <summary>
+        /// Remove old inactive refresh tokens from user based on TTL in app settings
+        /// </summary>
+        /// <param name="user"></param>
+        private void removeOldRefreshTokens(BTUser user)
+        {
+            if (user.RefreshTokens is not null)
+            {
+                if (user.RefreshTokens.Count >= 1)
+                {
+                    // remove old inactive refresh tokens from user based on TTL in app settings
+                    user.RefreshTokens.RemoveAll(x =>
+                        !x.IsActive && x.Created!.Value.AddDays(int.Parse(_configuration["ApplicationSettings:RefreshTokenTTL"]!)) <= DateTime.UtcNow);
+                }
+            }
+        }
+
+        /*private void List<RefreshTokenDTO> GetRefreshTokensForUser(Guid userId){
+            var refreshTokens = _authenticationDataContext.RefreshTokens
+                .Where(t => t.AccountId == userId)
+                .Select(t => new RefreshTokenDTO()
+                {
+                    Token = t.Token,
+                    Expires = t.Expires,
+                    Created = t.Created,
+                    CreatedByIp = t.CreatedByIp
+                })
+                .AsNoTracking()
+                .ToList();
+        }*/
 
         #endregion
     }

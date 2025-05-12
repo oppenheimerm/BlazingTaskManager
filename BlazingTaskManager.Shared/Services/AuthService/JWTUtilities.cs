@@ -56,7 +56,7 @@ namespace BlazingTaskManager.Shared.Services.AuthService
         /// </summary>
         /// <param name="jwtToken"></param>
         /// <returns></returns>
-        public BTUserClaimDTO? DecryptToken(string jwtToken)
+        public BTUserClaimsDTO? DecryptToken(string jwtToken)
         {
             try
             {
@@ -86,7 +86,7 @@ namespace BlazingTaskManager.Shared.Services.AuthService
                         rolesCollection = usrRoles.ToList();
                     }
                 }
-                return new BTUserClaimDTO()
+                return new BTUserClaimsDTO()
                 {
                     Id = Guid.Parse(Id!.Value),
                     FirstName = firstName!.Value,

@@ -27,7 +27,7 @@ namespace BlazingTaskManager.Shared.Services.AuthService
         /// </summary>
         /// <param name="jwtToken"></param>
         /// <returns></returns>
-        BTUserClaimDTO? DecryptToken(string jwtToken);
+        BTUserClaimsDTO? DecryptToken(string jwtToken);
 
         /// <summary>
         /// Validates the JWT token and returns the user ID if valid.

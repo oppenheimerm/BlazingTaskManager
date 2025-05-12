@@ -38,5 +38,85 @@ namespace BlazingTaskManager.AuthenticationAPI.Controllers
             var result = await _userRepositority.RegisterAsync(dto);
             return result.Success ? Ok(result) : BadRequest(result.Message);
         }
+
+        [AllowAnonymous]
+        [HttpPost("login")]
+        public async Task<ActionResult<APIResponseAuthentication>> LoginAsync(AuthenticateRequestDTO dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return new APIResponseAuthentication()
+                {
+                    Success = false,
+                    JwtToken = string.Empty,
+                    RefreshToken = string.Empty,
+                    Message = "Password or email address is incorrect."
+                };
+            }
+
+            var result = await _userRepositority.AuthenticateAsync(dto, ipAddress());
+
+            if (result.Success)
+            {
+                setTokenCookie(result.RefreshToken!);
+                return Ok(result);
+            }
+            else
+            {
+                return BadRequest(result);
+            }
+
+        }
+
+        [AllowAnonymous]
+        [HttpPost("verify-email")]
+        public async Task<IActionResult> VerifyEmail(VerifyEmailRequestDTO model)
+        {
+            if (!ModelState.IsValid) { return BadRequest(); }
+
+            if (!string.IsNullOrEmpty(model.Token))
+            {
+                var result = await _userRepositority.VerifyEmailAsync(model.Token);
+                return Ok(new { message = "Verification successful, you can now login" });
+            }
+            else
+            {
+                return BadRequest("Invalid or missing validation token.");
+            }
+
+        }
+
+        /// <summary>
+        /// Get the IP address of the client
+        /// </summary>
+        /// <returns></returns>
+        private string ipAddress()
+        {
+            if (Request.Headers.ContainsKey("X-Forwarded-For"))
+            {
+                string? forwardedFor = Request.Headers["X-Forwarded-For"].ToString();
+                if (!string.IsNullOrEmpty(forwardedFor))
+                {
+                    return forwardedFor;
+                }
+            }
+
+            if (HttpContext.Connection.RemoteIpAddress != null)
+            {
+                return HttpContext.Connection.RemoteIpAddress.MapToIPv4().ToString();
+            }
+
+            return "127.0.0.1"; // Fallback to localhost if no IP can be determined
+        }
+
+        private void setTokenCookie(string token)
+        {
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Expires = DateTime.UtcNow.AddDays(7)
+            };
+            Response.Cookies.Append("refreshToken", token, cookieOptions);
+        }
     }
 }
